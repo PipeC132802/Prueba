@@ -1,15 +1,37 @@
 import json
-
 import requests
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from Apps.Compradores.models import Compradores
 from Apps.Compradores.serializer import CompradoresSerializer
 from Prueba.settings import API_URL
 
 
+def format_address(address, city):
+    address_formatted = address.replace("#", ",")
+    city_formatted = city.replace("#", ",")
+    return address_formatted + "," + city_formatted
+
+
+def retrieve_geo_localization_data(address):
+    resp = requests.get(API_URL + address)
+    return json.loads(resp.text)
+
+
+def get_lon_lat_info(api_data):
+    try:
+        location = api_data["results"][0]["geometry"]["location"]
+        longitud = location["lng"]
+        latitud = location["lat"]
+        return longitud, latitud
+    except:
+        return 0, 0
+
+
 class CreateBuyerApi(generics.CreateAPIView):
     serializer_class = CompradoresSerializer
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request, *args, **kwargs):
         status = 400
@@ -42,12 +64,14 @@ class CreateBuyerApi(generics.CreateAPIView):
 
 
 class BuyersListApi(generics.ListAPIView):
+    permission_classes = (IsAuthenticated,)
     serializer_class = CompradoresSerializer
     queryset = Compradores.objects.all()
 
 
 class DetailBuyerApi(generics.RetrieveAPIView):
     serializer_class = CompradoresSerializer
+    permission_classes = (IsAuthenticated,)
 
     def get_object(self):
         return Compradores.objects.get(pk=self.request.GET["id"])
@@ -55,6 +79,7 @@ class DetailBuyerApi(generics.RetrieveAPIView):
 
 class DeleteBuyerApi(generics.DestroyAPIView):
     serializer_class = CompradoresSerializer
+    permission_classes = (IsAuthenticated,)
     model = Compradores
 
     def delete(self, request, *args, **kwargs):
@@ -65,31 +90,11 @@ class DeleteBuyerApi(generics.DestroyAPIView):
             return Response({"detail": "Buyer not found"}, status=404)
 
 
-def format_address(address, city):
-    address_formatted = address.replace("#", ",")
-    city_formatted = city.replace("#", ",")
-    return address_formatted + "," + city_formatted
-
-
-def retrieve_geo_localization_data(address):
-    resp = requests.get(API_URL+address)
-    return json.loads(resp.text)
-
-
-def get_lon_lat_info(api_data):
-    try:
-        location = api_data["results"][0]["geometry"]["location"]
-        longitud = location["lng"]
-        latitud = location["lat"]
-        return longitud, latitud
-    except:
-        return 0, 0
-
-
 class GeoCodifyBaseApi(generics.RetrieveAPIView):
+    permission_classes = (IsAuthenticated,)
     serializer_class = CompradoresSerializer
-    buyers = Compradores.objects.filter(estado_geo=False)
-    queryset = Compradores.objects.filter(estado_geo=False)
+    buyers = Compradores.objects.filter(estado_geo=False, longitud="", latitud="")
+
     def get(self, request, *args, **kwargs):
         response = []
         for buyer_data in self.buyers:
@@ -99,7 +104,8 @@ class GeoCodifyBaseApi(generics.RetrieveAPIView):
             response.append(buyer_data.serializer())
         return Response(response)
 
-    def save_geo_info(self, lon, lat,  buyer):
+    @staticmethod
+    def save_geo_info(lon, lat, buyer):
         if lon and lat:
             buyer.longitud = lon
             buyer.latitud = lat
