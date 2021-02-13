@@ -36,6 +36,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    # Self apps
+    'Apps.Users',
+
     # Third party apps
     'corsheaders',
     'rest_framework',
@@ -114,8 +117,12 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
+        'dj_rest_auth.jwt_auth.JWTCookieAuthentication',
     ]
 }
+
+REST_USE_JWT = True
+JWT_AUTH_COOKIE = 'token'
 
 # CORS configs
 CORS_ORIGIN_ALLOW_ALL = False
