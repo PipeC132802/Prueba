@@ -38,6 +38,7 @@ INSTALLED_APPS = [
 
     # Self apps
     'Apps.Users',
+    'Apps.Compradores',
 
     # Third party apps
     'corsheaders',
@@ -45,7 +46,6 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
 ]
-
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -139,3 +139,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+API_KEY = 'AIzaSyC-YhsO2a4BuF7pjbHAOBymEtVBRIH3ce8'
+API_URL = 'https://maps.googleapis.com/maps/api/geocode/json?key=' + API_KEY + "&address="
