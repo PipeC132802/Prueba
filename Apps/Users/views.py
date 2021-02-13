@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from Apps.Users.serializer import UserSerializer, UserStateSerializer
+from Apps.Users.serializer import *
 
 
 class UserRegistrationApi(generics.CreateAPIView):
@@ -43,7 +43,7 @@ class UserRegistrationApi(generics.CreateAPIView):
                 }
         except:
             response = {
-                "detail": "You have to send all the required info (username, email, password1 and password2)."
+                "detail": "You must send the data with the correct format."
             }
         if status == 200:
             response_obj = Response(response, status=status)
@@ -72,7 +72,7 @@ class UpdateUserApi(generics.UpdateAPIView):
             username = request.data["username"]
         except:
             response = {
-                "detail": "It lacks to add all info (first_name, last_name, username)"
+                "detail": "You must send the data with the correct format."
             }
             return Response(response, status=400)
 
@@ -122,30 +122,42 @@ class DeactivateUserApi(generics.UpdateAPIView):
 
 
 class ActivateUser(generics.UpdateAPIView):
+    serializer_class = UserSerializer
 
     def put(self, request, *args, **kwargs):
-        username = request.data["username"]
-        password = request.data["password"]
         try:
-            user = User.objects.get(username=username)
-            if check_password(password, user.instance.password):
-                user.is_active = True
-                user.save()
-                response = {
-                    "detail": "User account activated successfully"
-                }
-                status = 200
+            username = request.data["username"]
+            password = request.data["password"]
+            if username and password:
+                try:
+                    user = User.objects.get(username=username)
+                    if check_password(password, user.password):
+                        user.is_active = True
+                        user.save()
+                        response = {
+                            "detail": "User account activated successfully"
+                        }
+                        status = 200
+                    else:
+                        response = {
+                            "detail": "Password not match. Try again"
+                        }
+                        status = 400
+                except:
+                    response = {
+                        "detail": "User not found"
+                    }
+                    status = 404
             else:
                 response = {
-                    "detail": "Password not match. Try again"
+                    "detail": "You have to fill all the required info."
                 }
                 status = 400
         except:
             response = {
-                "detail": "User not found"
+                "detail": "You must send the data with the correct format."
             }
-            status = 404
-
+            status = 406
         return Response(response, status=status)
 
 

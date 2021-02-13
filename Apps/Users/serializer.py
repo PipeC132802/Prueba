@@ -12,3 +12,6 @@ class UserStateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['is_active']
+
+
+
