@@ -1,10 +1,64 @@
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import User
 from django.shortcuts import render
 
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from Apps.Users.serializer import UserSerializer, UserStateSerializer
+
+
+class UserRegistrationApi(generics.CreateAPIView):
+    serializer_class = UserSerializer
+
+    def post(self, request, *args, **kwargs):
+        status = 400
+        try:
+            username = request.data["username"]
+            email = request.data["email"]
+            password1 = request.data["password1"]
+            password2 = request.data["password2"]
+
+            if username and email and password1 and password2:
+                if password1 != password2:
+                    response = {
+                        "detail": "Passwords not match."
+                    }
+                else:
+                    try:
+                        user = User.objects.create(username=username, email=email)
+                        user.set_password(password1)
+                        user.save()
+                        response = self.get_tokens_for_user(user)
+                        status = 200
+                    except:
+                        response = {
+                            "detail": "username is already taken. Please, change yours and try again."
+                        }
+            else:
+                response = {
+                    "detail": "You have to fill all the required info."
+                }
+        except:
+            response = {
+                "detail": "You have to send all the required info (username, email, password1 and password2)."
+            }
+        if status == 200:
+            response_obj = Response(response, status=status)
+            response_obj.set_cookie('token', response["access_token"])
+            return response_obj
+        else:
+            return Response(response, status=status)
+
+    @staticmethod
+    def get_tokens_for_user(user):
+        refresh = RefreshToken.for_user(user)
+        return {
+            'refresh_token': str(refresh),
+            'access_token': str(refresh.access_token),
+        }
 
 
 class UpdateUserApi(generics.UpdateAPIView):
@@ -18,7 +72,7 @@ class UpdateUserApi(generics.UpdateAPIView):
             username = request.data["username"]
         except:
             response = {
-                "Detail": "It lacks to add all info (first_name, last_name, username)"
+                "detail": "It lacks to add all info (first_name, last_name, username)"
             }
             return Response(response, status=400)
 
@@ -30,7 +84,7 @@ class UpdateUserApi(generics.UpdateAPIView):
                 user.username = username
                 user.save()
                 response = {
-                    "Detail": "User info updated successfully",
+                    "detail": "User info updated successfully",
                     "user": {
                         "id": user.pk,
                         "username": user.username,
@@ -42,12 +96,12 @@ class UpdateUserApi(generics.UpdateAPIView):
                 return Response(response, status=200)
             except:
                 response = {
-                    "Detail": "Given username is duplicated. Please, change it."
+                    "detail": "Given username is duplicated. Please, change it."
                 }
                 return Response(response, status=409)
         else:
             response = {
-                "Detail": "User info don't have to be empty"
+                "detail": "User info don't have to be empty"
             }
             return Response(response, status=400)
 
@@ -61,7 +115,7 @@ class DeactivateUserApi(generics.UpdateAPIView):
         user.is_active = False
         user.save()
         response = {
-            "Detail": "User account deactivated successfully",
+            "detail": "User account deactivated successfully",
             "status": user.is_active
         }
         return Response(response, status=200)
@@ -71,5 +125,44 @@ class ActivateUser(generics.UpdateAPIView):
 
     def put(self, request, *args, **kwargs):
         username = request.data["username"]
-        password1 = request.data["password1"]
-        password2 = request.data["password2"]
+        password = request.data["password"]
+        try:
+            user = User.objects.get(username=username)
+            if check_password(password, user.instance.password):
+                user.is_active = True
+                user.save()
+                response = {
+                    "detail": "User account activated successfully"
+                }
+                status = 200
+            else:
+                response = {
+                    "detail": "Password not match. Try again"
+                }
+                status = 400
+        except:
+            response = {
+                "detail": "User not found"
+            }
+            status = 404
+
+        return Response(response, status=status)
+
+
+class DeleteAccount(generics.DestroyAPIView):
+    permission_classes = (IsAuthenticated,)
+
+    def delete(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            user.delete()
+            response = {
+                "detail": "User account deleted."
+            }
+            status = 200
+        except:
+            response = {
+                "detail": "User does not exists"
+            }
+            status = 406
+        return Response(response, status=status)
