@@ -5,3 +5,5 @@ dj_rest_auth
 djangorestframework
 djangorestframework-simplejwt
 requests
+pandas
+openpyxl
