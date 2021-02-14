@@ -8,7 +8,7 @@ from Apps.Users.serializer import *
 
 
 class UserRegistrationApi(generics.CreateAPIView):
-    serializer_class = UserSerializer
+    serializer_class = UserRegistrationSerializer
 
     def post(self, request, *args, **kwargs):
         status = 400
@@ -119,7 +119,7 @@ class DeactivateUserApi(generics.UpdateAPIView):
 
 
 class ActivateUser(generics.UpdateAPIView):
-    serializer_class = UserSerializer
+    serializer_class = UserActiveSerializer
 
     def put(self, request, *args, **kwargs):
         try:
@@ -171,7 +171,7 @@ class DeleteAccount(generics.DestroyAPIView):
             status = 200
         except:
             response = {
-                "detail": "User does not exists"
+                "detail": "User does not exist"
             }
             status = 406
         return Response(response, status=status)
