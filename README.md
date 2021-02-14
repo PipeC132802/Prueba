@@ -10,6 +10,7 @@ A continuación se explicará el formato de los datos en los endpoints:
 * registration/
 
 Para crear un usuario se hace una petición POST
+
 ```
     {
       username: '',
@@ -22,8 +23,8 @@ Para crear un usuario se hace una petición POST
 Cuándo el usuario es creado exitosamente, se envía el access_token y refresh token como objeto json y, de igual manera,
 se envía el access_token como cookie al cliente.
 
-* login/
-Para autenticar el usuario, se hace por medio de peticiones POST.
+* login/ Para autenticar el usuario, se hace por medio de peticiones POST.
+
 ```
     {
       username: '',
@@ -71,12 +72,12 @@ con el siguiente formato:
 ```
 
 * deactivate-account/
-  
+
 Para desactivar la cuenta, se hace una petición PUT a este endpoint con el token en el encabezado. Como respuesta se
 obtiene un mensaje confirmando la desactivación.
 
-* activate-account/ 
-  
+* activate-account/
+
 Para desactivar la cuenta, se hace una petición PUT a este endpoint.
 
 ```
@@ -90,3 +91,54 @@ Para desactivar la cuenta, se hace una petición PUT a este endpoint.
 
 Para eliminar la cuenta se envía el access_token en el encabezado y por medio de una petición DELETE.
 
+## Punto 2 y 3
+
+Para todos los endpoints se debe enviar el access_token en el encabezado ya que solamente usuarios autenticados pueden
+modificar la información de la tabla **Compradores**.
+
+* crear/
+
+  Petición de tipo POST con el siguiente formato:
+
+```
+    {
+      nombre: '',
+      apellido: '',
+      ciudad: '',
+      direccion: ''
+    }
+```
+
+* lista/
+
+  Petición GET que lista todos los compradores.
+
+* usuario/
+
+  En la url se envía el id del comprador a ver (http://localhost:8000/usuario/?id=<value>).
+
+* eliminar/<int: pk>/
+
+  Petición DELETE en el que el pk del vendedor a eliminar debe estar en la url.
+
+* geocodificar_base/
+
+  Petición GET que se conecta con la API geocoding de Google para convertir la dirección a coordenadas geográficas.
+  La respuesta obtenida tiene el siguiente formato:
+  
+```
+    [
+        {
+            "id": 1,
+            "nombre": "Nombre",
+            "apellido": "Apellido",
+            "ciudad": "Ciudad",
+            "longitud": -76.5195723,
+            "latitud": 3.3650411,
+            "estado_geo": true
+        },
+        .
+        .
+        .
+    ]
+```
