@@ -142,3 +142,8 @@ modificar la información de la tabla **Compradores**.
         .
     ]
 ```
+
+## Punto 4
+
+  Se lee el archivo resultados_elecciones.xlsx con información relacionada a una votación, se agrupa  por los campos candidato, partido, puesto, municipio y
+departamento y dicha agrupación se guarda en dos archivos: _data_grouped.csv_ y _data_grouped.xslx_
