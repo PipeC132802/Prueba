@@ -1,5 +1,6 @@
 import pandas as pd
 
+
 class ResultElections:
 
     def __init__(self):
@@ -18,6 +19,7 @@ class ResultElections:
 
     def write_file(self):
         self.data_grouped.to_csv('data_grouped.csv')
+        self.data_grouped.to_excel('data_grouped.xlsx', sheet_name='data')
 
 
 results_elections = ResultElections()
