@@ -1,6 +1,4 @@
 .idea
 db.sqlite3
 Pipfile
-data_grouped.csv
-data_grouped.xlsx
 *.pyc
