@@ -93,7 +93,8 @@ class DeleteBuyerApi(generics.DestroyAPIView):
 class GeoCodifyBaseApi(generics.RetrieveAPIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = CompradoresSerializer
-    buyers = Compradores.objects.filter(estado_geo=False, longitud="", latitud="")
+    buyers = Compradores.objects.filter(estado_geo=False)
+    queryset = Compradores.objects.filter(estado_geo=False, longitud="", latitud="")
 
     def get(self, request, *args, **kwargs):
         response = []
